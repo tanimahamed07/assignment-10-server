@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const port = process.env.PORT || 3000;
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 // middleware 
 app.use(cors());
@@ -38,6 +38,15 @@ async function run() {
     });
     app.get('/all-artworks', async (req, res) => {
       const result = await modelCollection.find().toArray()
+      res.send({
+        success: true,
+        result,
+      });
+    })
+    app.get('/art-details/:id', async (req, res) => {
+      const { id } = req.params; 
+      console.log(id);
+      const result = await modelCollection.findOne({ _id: new ObjectId(id) });
       res.send({
         success: true,
         result,
