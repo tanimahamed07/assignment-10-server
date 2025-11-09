@@ -1,14 +1,12 @@
-const express = require('express')
-const app = express()
-const cors = require('cors'); 
+const express = require('express');
+const app = express();
+const cors = require('cors');
 const port = process.env.PORT || 3000;
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
-
-
 // middleware 
 app.use(cors());
-app.use(express.json())
+app.use(express.json());
 
 const uri = "mongodb+srv://ARTIFY_DB:mLpclWTRK99TzcIv@cluster0.2ss8g4p.mongodb.net/?appName=Cluster0";
 
@@ -21,25 +19,40 @@ const client = new MongoClient(uri, {
 });
 
 app.get('/', (req, res) => {
-  res.send('server is running')
-})
+  res.send('Server is running');
+});
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    // Send a ping to confirm a successful connection
+    const db = client.db("ARTIFY_DB");
+    const modelCollection = db.collection("Artworks");
+
+    // Correct route
+    app.get("/latest-artworks", async (req, res) => {
+      const result = await modelCollection.find({ visibility: true }).sort({ createdAt: -1 }).limit(6).toArray();
+      res.send({
+        success: true,
+        result,
+      });
+    });
+    app.get('/all-artworks', async (req, res) => {
+      const result = await modelCollection.find().toArray()
+      res.send({
+        success: true,
+        result,
+      });
+    })
+
     await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
+    console.log("Pinged your deployment. Successfully connected to MongoDB!");
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
   }
 }
 
-
-
+run().catch(err => console.error(err)); // Make sure to call the function
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Server listening on port ${port}`);
+});
