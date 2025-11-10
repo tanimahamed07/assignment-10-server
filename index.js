@@ -28,7 +28,7 @@ async function run() {
     const db = client.db("ARTIFY_DB");
     const modelCollection = db.collection("Artworks");
 
-    // Correct route
+
     app.get("/latest-artworks", async (req, res) => {
       const result = await modelCollection.find({ visibility: true }).sort({ createdAt: -1 }).limit(6).toArray();
       res.send({
@@ -44,13 +44,27 @@ async function run() {
       });
     })
     app.get('/art-details/:id', async (req, res) => {
-      const { id } = req.params; 
+      const { id } = req.params;
       console.log(id);
       const result = await modelCollection.findOne({ _id: new ObjectId(id) });
+      const query = { artistEmail: result.artistEmail }
+      const allArtByArtist = await modelCollection.find(query).toArray();
       res.send({
         success: true,
         result,
+        allArtByArtist,
       });
+    })
+    app.put('/art-details/:id/like', async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) }
+      const result = await modelCollection.updateOne(
+        query,
+        { $inc: { likes: 1 } })
+      res.send({
+        success: true,
+        result
+      })
     })
 
     await client.db("admin").command({ ping: 1 });
@@ -59,6 +73,7 @@ async function run() {
     console.error("MongoDB connection error:", err);
   }
 }
+
 
 run().catch(err => console.error(err)); // Make sure to call the function
 
