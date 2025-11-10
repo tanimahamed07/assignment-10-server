@@ -44,6 +44,47 @@ async function run() {
         result,
       });
     })
+    app.get('/update/:id', async (req, res) => {
+      const { id } = req.params;
+      console.log(id)
+      const result = await modelCollection.findOne({ _id: new ObjectId(id) });
+      res.send(
+        {
+          success: true,
+          result
+        }
+      )
+
+    })
+    app.get('/my-gallery', async (req, res) => {
+      const { email } = req.query
+      const result = await modelCollection.find({ artistEmail: email }).toArray()
+      res.send({
+        success: true,
+        result
+      })
+    })
+    app.patch('/update-art/:id', async (req, res) => {
+      const { id } = req.params;
+      const updateData = req.body;
+      const result = await modelCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updateData }
+      );
+      res.send({
+        success: true,
+        result
+      })
+    })
+
+    app.delete('/delete-artwork', async (req, res) => {
+      const { id } = req.query;
+      const result = await modelCollection.deleteOne({ _id: new ObjectId(id) });
+      res.send({
+        success: true,
+        result
+      })
+    })
     app.post('/add-artworks', async (req, res) => {
       const artWorks = req.body;
       // console.log(artWorks)
@@ -93,6 +134,15 @@ async function run() {
       res.send({
         success: true,
         result
+      })
+    })
+    app.delete('/unFevorites', async (req, res) => {
+      const { id } = req.query;
+      console.log(id)
+      const result = await favoriteCollecton.deleteOne({ _id: new ObjectId(id) });
+      res.send({
+        success: true,
+        result,
       })
     })
 
