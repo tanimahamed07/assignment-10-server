@@ -27,6 +27,7 @@ async function run() {
     await client.connect();
     const db = client.db("ARTIFY_DB");
     const modelCollection = db.collection("Artworks");
+    const favoriteCollecton = db.collection("favorite");
 
 
     app.get("/latest-artworks", async (req, res) => {
@@ -42,6 +43,16 @@ async function run() {
         success: true,
         result,
       });
+    })
+    app.post('/add-artworks', async (req, res) => {
+      const artWorks = req.body;
+      // console.log(artWorks)
+      const result = await modelCollection.insertOne(artWorks);
+      res.send({
+        success: true,
+        result
+      })
+
     })
     app.get('/art-details/:id', async (req, res) => {
       const { id } = req.params;
@@ -61,6 +72,24 @@ async function run() {
       const result = await modelCollection.updateOne(
         query,
         { $inc: { likes: 1 } })
+      res.send({
+        success: true,
+        result
+      })
+    })
+    app.post('/fevorites', async (req, res) => {
+      const favorite = req.body;
+      console.log(favorite)
+      const result = await favoriteCollecton.insertOne(favorite);
+      res.send({
+        success: true,
+        result
+      })
+    })
+    app.get('/favorites-list', async (req, res) => {
+      const { email } = req.query;
+      const query = { userEmail: email };
+      const result = await favoriteCollecton.find(query).toArray();
       res.send({
         success: true,
         result
