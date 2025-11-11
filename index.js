@@ -35,7 +35,6 @@ const verifyFireBaseToken = async (req, res, next) => {
 
 
 
-
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.2ss8g4p.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
@@ -66,13 +65,13 @@ async function run() {
       });
     });
     app.get('/all-artworks', async (req, res) => {
-      const result = await modelCollection.find().toArray()
+      const result = await modelCollection.find({ visibility: true }).sort({ createdAt: -1 }).toArray()
       res.send({
         success: true,
         result,
       });
     })
-    app.get('/update/:id', async (req, res) => {
+    app.get('/update/:id', verifyFireBaseToken, async (req, res) => {
       const { id } = req.params;
       console.log(id)
       const result = await modelCollection.findOne({ _id: new ObjectId(id) });
@@ -95,7 +94,7 @@ async function run() {
         result
       })
     })
-    app.patch('/update-art/:id', async (req, res) => {
+    app.patch('/update-art/:id', verifyFireBaseToken, async (req, res) => {
       const { id } = req.params;
       const updateData = req.body;
       const result = await modelCollection.updateOne(
@@ -108,7 +107,7 @@ async function run() {
       })
     })
 
-    app.delete('/delete-artwork', async (req, res) => {
+    app.delete('/delete-artwork', verifyFireBaseToken, async (req, res) => {
       const { id } = req.query;
       const result = await modelCollection.deleteOne({ _id: new ObjectId(id) });
       res.send({
@@ -118,7 +117,6 @@ async function run() {
     })
     app.post('/add-artworks', verifyFireBaseToken, async (req, res) => {
       const artWorks = req.body;
-      // console.log(artWorks)
       const result = await modelCollection.insertOne(artWorks);
       res.send({
         success: true,
@@ -158,7 +156,7 @@ async function run() {
         result
       })
     })
-    app.get('/favorites-list', async (req, res) => {
+    app.get('/favorites-list', verifyFireBaseToken, async (req, res) => {
       const { email } = req.query;
       const query = { userEmail: email };
       const result = await favoriteCollecton.find(query).toArray();
@@ -167,7 +165,7 @@ async function run() {
         result
       })
     })
-    app.delete('/unFevorites', async (req, res) => {
+    app.delete('/unFevorites', verifyFireBaseToken, async (req, res) => {
       const { id } = req.query;
       console.log(id)
       const result = await favoriteCollecton.deleteOne({ _id: new ObjectId(id) });
